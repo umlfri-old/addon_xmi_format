@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AddOn xmlns="http://umlfri.org/xmlschema/addon.xsd">
+    <Identity uri="urn:umlfri.org:plugin:xmiFormat" />
+
+    <FriendlyName name="XMI Format" version="0.0.1" />
+    <Author>
+        <Name name="Michal Petrovič" />
+        <Homepage url="http://umlfri.org" />
+
+        <CommonLicense name="GPL-2" />
+    </Author>
+
+    <Icon path="icons/xmiFormat_icon.png" />
+    <Description>
+        Plugin to import and export models.
+    </Description>
+    
+    <Dependencies>
+        <AddOn uri="urn:umlfri.org:starters:python" />
+    </Dependencies>
+
+    <Plugin>
+        <Code os="all" language="pythonNew" path="plugin" />
+    </Plugin>
+</AddOn>
