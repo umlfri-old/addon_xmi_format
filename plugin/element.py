@@ -61,7 +61,8 @@ class Element:
         self._read_tagged_values()
         self._read_children_nodes()
         self._read_childrens()
-        self._read_attributes()         
+        self._read_attributes()
+        self._read_operations()
 
     def write(self, reference, importer):
         self.reference = reference
@@ -69,7 +70,8 @@ class Element:
 
         self._write_properties()
         self._write_children()
-        self._write_attributes()        
+        self._write_attributes()
+        self._write_operations()
 
     def _read_childrens(self):
         owned_element = [x for x in self.lxml_element.getchildren() if "Namespace.ownedElement" in x.tag]
@@ -147,6 +149,14 @@ class Element:
             new_attribute.read(self.xmi_file)
             self.atributes.append(new_attribute)
 
+    def _read_operations(self):
+        operations = self.lxml_element.xpath("UML:Classifier.feature/UML:Operation", namespaces=self.xpath[1])
+
+        for operation in operations:
+            new_operation = Operation(operation, (etree.ElementTree(self.lxml_element).getpath(operation), self.xpath[1]))
+            new_operation.read(self.xmi_file)
+            self.operations.append(new_operation)
+
     def _get_tag(self, element):
         tag = element.tag
         if '}' in tag:
@@ -184,3 +194,17 @@ class Element:
 
                 self.reference.append_item('attributes[' + attribute.position + ']')
                 attribute.write(self.reference)
+
+    def _write_operations(self):
+        if self.operations:
+            if sorted([x.position for x in self.operations]) != range(len(self.operations)):
+                get_position = lambda y: str(self.operations.index(y))
+            else:
+                self.operations.sort(key=lambda y: int(y.position))
+                get_position = lambda y: str(y.position)
+
+            for operation in self.operations:
+                operation.position = get_position(operation)
+
+                self.reference.append_item('operations[' + operation.position + ']')
+                operation.write(self.reference)
