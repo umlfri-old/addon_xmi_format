@@ -60,14 +60,16 @@ class Element:
         self._read_xml_attributes()
         self._read_tagged_values()
         self._read_children_nodes()
-        self._read_childrens()          
+        self._read_childrens()
+        self._read_attributes()         
 
     def write(self, reference, importer):
         self.reference = reference
         self.importer = importer
 
         self._write_properties()
-        self._write_children()          
+        self._write_children()
+        self._write_attributes()        
 
     def _read_childrens(self):
         owned_element = [x for x in self.lxml_element.getchildren() if "Namespace.ownedElement" in x.tag]
@@ -135,7 +137,15 @@ class Element:
                     self.values[a[0]] = value
             except KeyError:
                 print "Children node value " + a[1] + " for " + (self.values.get("name") or self.type) + " is not available or supported!"
-                continue    
+                continue
+
+    def _read_attributes(self):
+        attributes = self.lxml_element.xpath("UML:Classifier.feature/UML:Attribute", namespaces=self.xpath[1])
+
+        for attribute in attributes:
+            new_attribute = Attribute(attribute, (etree.ElementTree(self.lxml_element).getpath(attribute), self.xpath[1]))
+            new_attribute.read(self.xmi_file)
+            self.atributes.append(new_attribute)
 
     def _get_tag(self, element):
         tag = element.tag
@@ -159,4 +169,18 @@ class Element:
                     print "Element type: " + self.type + " do not support property " + a
                     continue
                 else:
-                    raise  
+                    raise
+
+    def _write_attributes(self):
+        if self.atributes:
+            if sorted([x.position for x in self.atributes]) != range(len(self.atributes)):
+                get_position = lambda y: str(self.atributes.index(y))
+            else:
+                self.atributes.sort(key=lambda y: int(x.position))
+                get_position = lambda y: str(y.position)
+
+            for attribute in self.atributes:
+                attribute.position = get_position(attribute)
+
+                self.reference.append_item('attributes[' + attribute.position + ']')
+                attribute.write(self.reference)
