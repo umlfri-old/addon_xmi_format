@@ -48,7 +48,7 @@ class Element:
         self.operations = []
         self.values = {}
 
-        self.type = self._get_tag(self.lxml_element)
+        self.type = Dictionary.ELEMENT_TYPE[self._get_tag(self.lxml_element)]
         self.xmi_file = None
         self.element_id = None
         self.reference = None
