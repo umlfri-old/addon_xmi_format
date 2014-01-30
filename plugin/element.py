@@ -1,11 +1,40 @@
 #coding=utf-8
 __author__ = 'Michal Petrovič'
 
+from attribute import *
+from operation import *
 from dictionary import *
+from lxml import etree
 import re
 
 
 class Element:
+
+    ATRIBUTES = (
+        ("name", "name"),
+        ("abstract", "isAbstract",
+            {
+                'false': "False",
+                'true': "True"
+            }
+         ),
+        ("scope", "visibility",
+            {
+                "private": "Private",
+                "public": "Public",
+                "protected": "Protected"
+            }
+         )
+    )
+
+    TAGGED_VALUES = (
+        ("note", "documentation", lambda x: re.sub("<(.*?)>", '', x or "")),
+
+    )
+
+    CHILDREN_NODES = (
+        ("stereotype", "UML:ModelElement.stereotype/UML:Stereotype/@name")
+    )
 
     def __init__(self, lxml_element, xpath=None):
         self.lxml_element = lxml_element
@@ -19,9 +48,8 @@ class Element:
         self.operations = []
         self.values = {}
 
+        self.type = self._get_tag(self.lxml_element)
         self.xmi_file = None
-        self.type = None
-        self.name = None
         self.element_id = None
         self.reference = None
         self.importer = None
@@ -29,14 +57,17 @@ class Element:
     def read(self, xmi_file):
         self.xmi_file = xmi_file
 
-        self._read_attributes()
-        self._read_childrens()
+        self._read_xml_attributes()
+        self._read_tagged_values()
+        self._read_children_nodes()
+        self._read_childrens()          
 
     def write(self, reference, importer):
         self.reference = reference
         self.importer = importer
 
-        self._write_children()
+        self._write_properties()
+        self._write_children()          
 
     def _read_childrens(self):
         owned_element = [x for x in self.lxml_element.getchildren() if "Namespace.ownedElement" in x.tag]
@@ -45,15 +76,66 @@ class Element:
 
             for child in children:
                 if self._get_tag(child) in Dictionary.ELEMENT_TYPE:
-                    new_element = Element(child)
+                    new_element = Element(child, (etree.ElementTree(self.lxml_element).getpath(self.lxml_element), self.xpath[1]))
                     new_element.read(self.xmi_file)
                     self.childrens.append(new_element)
 
-    def _read_attributes(self):
-        self.type = self._get_tag(self.lxml_element)
-        self.name = self.lxml_element.attrib["name"]
+    def _read_xml_attributes(self):
         self.element_id = self.lxml_element.attrib["xmi.id"]
 
+        for a in Element.ATRIBUTES:
+                try:
+                    if len(a) == 2:
+                        value = self.lxml_element.attrib[a[1]]
+                    elif len(a) == 3 and callable(a[2]):
+                        value = a[2](self.lxml_element.attrib[a[1]])
+                    elif len(a) == 3 and not callable(a[2]):
+                        value = a[2][self.lxml_element.attrib[a[1]]]
+
+                    self.values[a[0]] = value
+                except KeyError:
+                    print "Attribute " + a[1] + " for " + (self.values.get("name") or self.type) + " is not available or supported!"
+                    continue
+
+    def _read_tagged_values(self):
+        for a in Element.TAGGED_VALUES:
+            try:
+                tag_value = self.lxml_element.xpath(
+                    "UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + a[1] + "']/@value",
+                    namespaces=self.xpath[1]
+                )
+
+                if tag_value:
+                    if len(a) == 2:
+                        value = tag_value[0]
+                    elif len(a) == 3 and callable(a[2]):
+                        value = a[2](tag_value[0])
+                    elif len(a) == 3 and not callable(a[2]):
+                        value = a[2][tag_value[0]]
+
+                    self.values[a[0]] = value
+            except KeyError:
+                print "Tagged value " + a[1] + " for " + (self.values.get("name") or self.type) + " is not available or supported!"
+                continue
+
+    def _read_children_nodes(self):
+        for a in Element.TAGGED_VALUES:
+            try:
+
+                node_value = self.lxml_element.xpath(a[1], namespaces=self.xpath[1])
+
+                if node_value:
+                    if len(a) == 2:
+                        value = node_value[0]
+                    elif len(a) == 3 and callable(a[2]):
+                        value = a[2](node_value[0])
+                    elif len(a) == 3 and not callable(a[2]):
+                        value = a[2][node_value[0]]
+
+                    self.values[a[0]] = value
+            except KeyError:
+                print "Children node value " + a[1] + " for " + (self.values.get("name") or self.type) + " is not available or supported!"
+                continue    
 
     def _get_tag(self, element):
         tag = element.tag
@@ -65,6 +147,16 @@ class Element:
 
     def _write_children(self):
         for a in self.childrens:
-            print "write element " + repr(a.name)
             new_child = self.reference.create_child_element(self.importer.get_metamodel().elements[a.type])
             a.write(new_child, self.importer)
+
+    def _write_properties(self):
+        for a in self.values:
+            try:
+                self.reference.values[a] = (self.values[a] or '')
+            except Exception as e:
+                if "Invalid attribute" in e.message:
+                    print "Element type: " + self.type + " do not support property " + a
+                    continue
+                else:
+                    raise  

@@ -42,12 +42,15 @@ class Importer:
             return tag
 
     def _read(self):
-        if self.xmi_exporter == "Enterprise Architect" and self.xmi_version == "1.1":
+        if self.xmi_version == "1.1":
             ns = {"UML": "omg.org/UML1.3"}
-            xpath = ("/XMI/XMI.content/UML:Model/UML:Namespace.ownedElement/UML:Package", ns)
+
+            if self.xmi_exporter == "Enterprise Architect":
+                xpath = ("/XMI/XMI.content/UML:Model/UML:Namespace.ownedElement/UML:Package", ns)
+            else:
+                xpath = ("/XMI/XMI.content//*[@name]", ns)
             lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
             self.root = Element(lxml_element, xpath)
-
             self.root.read(self.xml_file)
 
     def _write(self, parent_package):
@@ -55,7 +58,8 @@ class Importer:
             self._choose(self.adapter.templates, "Empty UML diagram").create_new_project()
             self.root.write(self.adapter.project.root, self)
         else:
-            self.root.write(parent_package, self)
+            root_reference = parent_package.create_child_element(self.get_metamodel().elements[self.root.type])
+            self.root.write(root_reference, self)
 
     def get_metamodel(self):
         if self.adapter.project:
