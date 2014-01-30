@@ -43,12 +43,8 @@ class Importer:
 
     def _read(self):
         if self.xmi_version == "1.1":
-            ns = {"UML": "omg.org/UML1.3"}
-
-            if self.xmi_exporter == "Enterprise Architect":
-                xpath = ("/XMI/XMI.content/UML:Model/UML:Namespace.ownedElement/UML:Package", ns)
-            else:
-                xpath = ("/XMI/XMI.content//*[@name]", ns)
+            ns = self.xml_file.nsmap
+            xpath = ("/XMI/XMI.content//*[@name]/UML:Namespace.ownedElement/UML:Package", ns)
             lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
             self.root = Element(lxml_element, xpath)
             self.root.read(self.xml_file)
