@@ -48,7 +48,7 @@ class Element:
         self.operations = []
         self.values = {}
 
-        self.type = Dictionary.ELEMENT_TYPE[self._get_tag(self.lxml_element)]
+        self.type = None
         self.xmi_file = None
         self.element_id = None
         self.reference = None
@@ -74,13 +74,15 @@ class Element:
         self._write_operations()
 
     def _read_childrens(self):
-        owned_element = [x for x in self.lxml_element.getchildren() if "Namespace.ownedElement" in x.tag]
-        if len(owned_element) == 1:
-            children = [y for y in owned_element[0].getchildren()]
+        owned_element = self.lxml_element.xpath("UML:Namespace.ownedElement/*", namespaces=self.xpath[1]) +\
+                        self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xpath[1]) +\
+                        self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xpath[1])
 
-            for child in children:
-                if self._get_tag(child) in Dictionary.ELEMENT_TYPE:
+        if owned_element:
+            for child in owned_element:
+                if ((child.get("kind") and (self._get_tag(child), child.get("kind"))) or self._get_tag(child)) in Dictionary.ELEMENT_TYPE:
                     new_element = Element(child, (etree.ElementTree(self.lxml_element).getpath(self.lxml_element), self.xpath[1]))
+                    new_element.type = Dictionary.ELEMENT_TYPE[((child.get("kind") and (self._get_tag(child), child.get("kind"))) or self._get_tag(child))]
                     new_element.read(self.xmi_file)
                     self.childrens.append(new_element)
 

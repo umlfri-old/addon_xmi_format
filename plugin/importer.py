@@ -47,6 +47,7 @@ class Importer:
             xpath = ("/XMI/XMI.content//*[@name]/UML:Namespace.ownedElement/UML:Package", ns)
             lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
             self.root = Element(lxml_element, xpath)
+            self.root.type = Dictionary.ELEMENT_TYPE[self.get_tag(lxml_element)]
             self.root.read(self.xml_file)
 
     def _write(self, parent_package):

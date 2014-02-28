@@ -13,20 +13,21 @@ class Dictionary:
     }
 
     ELEMENT_TYPE = {
-        #None: "StartState",
-        #None: "EndState",
-        #None: "Decision",
+        ("Pseudostate", "initial"): "StartState",
+        "FinalState": "EndState",
+        ("Pseudostate", "branch"): "Decision",
         "Package": "Package",
-        #None: "Object",
-        #None: "UseCase",
-        #None: "Actor",
+        "Object": "Object",
+        "UseCase": "UseCase",
+        "Actor": "Actor",
         "Class": "Class",
-        #None: "Note",
+        "Comment": "Note",
         #None: "Merge",
-        #None: "State",
+        "SimpleState": "State",
         #None: "VerticalSynchronization",
-        #None: "HorizontalSynchronization",
-        #None: "Activity",
+        ("Pseudostate", "join"): "HorizontalSynchronization",
+        ("Pseudostate", "fork"): "HorizontalSynchronization",
+        "ActionState": "Activity",
         "Interface": "Interface"
         #None: "Boundary"
     }
