@@ -2,6 +2,7 @@
 __author__ = 'Michal Petrovič'
 
 from element import *
+from diagram import *
 from import_dialog import *
 
 from lxml import etree
@@ -15,6 +16,7 @@ class Importer:
         self.root = None
         self.project_elements = {}
         self.project_connectors = []
+        self.project_diagrams = []
 
         with open(import_file, "r") as tmp:
             self.xml_file = etree.fromstringlist(tmp.read())
@@ -31,19 +33,6 @@ class Importer:
         self._read()
         self._write(parent_package)
 
-    def _choose(self, sequence, name):
-        for x in sequence:
-            if x.name == name:
-                return x
-
-    def get_tag(self, element):
-        tag = element.tag
-        if '}' in tag:
-            ns, local = tag.split('}', 1)
-            return local
-        else:
-            return tag
-
     def _read(self):
         if self.xmi_version == "1.1":
             ns = self.xml_file.nsmap
@@ -52,6 +41,24 @@ class Importer:
             self.root = Element(lxml_element, xpath)
             self.root.type = Dictionary.ELEMENT_TYPE[self.get_tag(lxml_element)]
             self.root.read(self.xml_file, self)
+            self._read_diagrams()
+
+    def _read_diagrams(self):
+        diagrams = self.xml_file.xpath("/XMI/XMI.content/UML:Diagram", namespaces=self.xml_file.nsmap)
+
+        for diagram in diagrams:
+            if diagram.get("diagramType") in Dictionary.DIAGRAM_TYPE:
+                new_diagram = Diagram(diagram, (etree.ElementTree(self.xml_file).getpath(diagram), self.xml_file.nsmap))
+                new_diagram.type = Dictionary.DIAGRAM_TYPE[diagram.get("diagramType")]
+                new_diagram.read(self.xml_file)
+                self.project_diagrams.append(new_diagram)
+
+    def _write_diagrams(self):
+        if self.project_diagrams:
+            for diagram in self.project_diagrams:
+                if diagram.parent_element_id in self.project_elements:
+                    new_diagram = self.project_elements[diagram.parent_element_id].create_diagram(self.get_metamodel().diagrams[diagram.type])
+                    diagram.write(new_diagram, self)
 
     def _write(self, parent_package):
         if parent_package is None:
@@ -62,6 +69,7 @@ class Importer:
             self.root.write(root_reference)
         self.project_elements[self.root.element_id] = self.root.reference
         self._write_connectors()
+        self._write_diagrams()
 
     def _write_connectors(self):
         for connector in self.project_connectors:
@@ -74,7 +82,7 @@ class Importer:
                 new_connector = source.connect_with(dest, self.get_metamodel().connections[connector.type])
             except Exception as e:
                 if "Unknown exception" in e.message:
-                    print "Connector type " + connector.type + " is not supported for " + \
+                    print "Connector type" + connector.type + " is not supported for " + \
                           source.name + '(' + source.type.name + ')' + \
                           " or " + dest.name + '(' + dest.type.name + ") type of element!"
                     continue
@@ -83,3 +91,16 @@ class Importer:
     def get_metamodel(self):
         if self.adapter.project:
             return self.adapter.project.metamodel
+
+    def _choose(self, sequence, name):
+        for x in sequence:
+            if x.name == name:
+                return x
+
+    def get_tag(self, element):
+        tag = element.tag
+        if '}' in tag:
+            ns, local = tag.split('}', 1)
+            return local
+        else:
+            return tag
