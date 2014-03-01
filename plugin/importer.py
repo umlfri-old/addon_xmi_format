@@ -11,7 +11,10 @@ class Importer:
 
     def __init__(self, adapter, import_file):
         self.adapter = adapter
+
         self.root = None
+        self.project_elements = {}
+        self.project_connectors = []
 
         with open(import_file, "r") as tmp:
             self.xml_file = etree.fromstringlist(tmp.read())
@@ -48,15 +51,34 @@ class Importer:
             lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
             self.root = Element(lxml_element, xpath)
             self.root.type = Dictionary.ELEMENT_TYPE[self.get_tag(lxml_element)]
-            self.root.read(self.xml_file)
+            self.root.read(self.xml_file, self)
 
     def _write(self, parent_package):
         if parent_package is None:
             self._choose(self.adapter.templates, "Empty UML diagram").create_new_project()
-            self.root.write(self.adapter.project.root, self)
+            self.root.write(self.adapter.project.root)
         else:
             root_reference = parent_package.create_child_element(self.get_metamodel().elements[self.root.type])
-            self.root.write(root_reference, self)
+            self.root.write(root_reference)
+        self.project_elements[self.root.element_id] = self.root.reference
+        self._write_connectors()
+
+    def _write_connectors(self):
+        for connector in self.project_connectors:
+            if connector.source_id not in self.project_elements or connector.dest_id not in self.project_elements:
+                continue
+            source = self.project_elements[connector.source_id]
+            dest = self.project_elements[connector.dest_id]
+
+            try:
+                new_connector = source.connect_with(dest, self.get_metamodel().connections[connector.type])
+            except Exception as e:
+                if "Unknown exception" in e.message:
+                    print "Connector type " + connector.type + " is not supported for " + \
+                          source.name + '(' + source.type.name + ')' + \
+                          " or " + dest.name + '(' + dest.type.name + ") type of element!"
+                    continue
+            connector.write(new_connector)
 
     def get_metamodel(self):
         if self.adapter.project:

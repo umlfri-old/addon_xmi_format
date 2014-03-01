@@ -4,6 +4,7 @@ __author__ = 'Michal Petrovič'
 from attribute import *
 from operation import *
 from dictionary import *
+from connector import *
 from lxml import etree
 import re
 
@@ -54,8 +55,9 @@ class Element:
         self.reference = None
         self.importer = None
 
-    def read(self, xmi_file):
+    def read(self, xmi_file, importer):
         self.xmi_file = xmi_file
+        self.importer = importer
 
         self._read_xml_attributes()
         self._read_tagged_values()
@@ -64,9 +66,8 @@ class Element:
         self._read_attributes()
         self._read_operations()
 
-    def write(self, reference, importer):
+    def write(self, reference):
         self.reference = reference
-        self.importer = importer
 
         self._write_properties()
         self._write_children()
@@ -74,17 +75,19 @@ class Element:
         self._write_operations()
 
     def _read_childrens(self):
-        owned_element = self.lxml_element.xpath("UML:Namespace.ownedElement/*", namespaces=self.xpath[1]) +\
+        owned_elements = self.lxml_element.xpath("UML:Namespace.ownedElement/*", namespaces=self.xpath[1]) +\
                         self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xpath[1]) +\
                         self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xpath[1])
 
-        if owned_element:
-            for child in owned_element:
+        if owned_elements:
+            for child in owned_elements:
                 if ((child.get("kind") and (self._get_tag(child), child.get("kind"))) or self._get_tag(child)) in Dictionary.ELEMENT_TYPE:
                     new_element = Element(child, (etree.ElementTree(self.lxml_element).getpath(self.lxml_element), self.xpath[1]))
                     new_element.type = Dictionary.ELEMENT_TYPE[((child.get("kind") and (self._get_tag(child), child.get("kind"))) or self._get_tag(child))]
-                    new_element.read(self.xmi_file)
+                    new_element.read(self.xmi_file, self.importer)
                     self.childrens.append(new_element)
+
+            self._read_connectors(owned_elements)
 
     def _read_xml_attributes(self):
         self.element_id = self.lxml_element.attrib["xmi.id"]
@@ -159,6 +162,32 @@ class Element:
             new_operation.read(self.xmi_file)
             self.operations.append(new_operation)
 
+    def _read_connectors(self, owned_element):
+        owned_element += self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.transitions/*", namespaces=self.xpath[1]) + \
+            self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.transitions/*", namespaces=self.xpath[1])
+
+        for connector in owned_element:
+            possible_type = [
+                self._get_tag(connector),
+                (self._get_tag(connector), self._get_tag((connector.xpath("../..", namespaces=self.xpath[1]) or ("",))[0])),
+                (self._get_tag(connector), (connector.xpath("*/*[@aggregation!='none']/@aggregation", namespaces=self.xpath[1]) or ("",))[0]),
+                (self._get_tag(connector), connector.xpath("*/*/@aggregation!='none'", namespaces=self.xpath[1]) or "normal")
+            ]
+
+            #check for use case association
+            end_id = connector.xpath("UML:Association.connection/UML:AssociationEnd/@type", namespaces=self.xpath[1])
+            end_type = [(connector.xpath("//*[@xmi.id='" + x + "']", namespaces=self.xpath[1]) or ("",))[0] for x in end_id]
+            if any(self._get_tag(x) in ("UseCase", "Actor") for x in end_type) and ("Association", "normal") in possible_type:
+                possible_type.remove(("Association", "normal"))
+                possible_type.append((self._get_tag(connector), "useCase"))
+
+            intersection = set(Dictionary.CONNECTION_TYPE).intersection(possible_type)
+            if len(intersection) == 1:
+                new_connector = Connector(connector, (etree.ElementTree(self.lxml_element).getpath(connector), self.xpath[1]))
+                new_connector.type = Dictionary.CONNECTION_TYPE.get(list(intersection)[0])
+                new_connector.read(self.xmi_file)
+                self.importer.project_connectors.append(new_connector)
+
     def _get_tag(self, element):
         tag = element.tag
         if '}' in tag:
@@ -170,7 +199,8 @@ class Element:
     def _write_children(self):
         for a in self.childrens:
             new_child = self.reference.create_child_element(self.importer.get_metamodel().elements[a.type])
-            a.write(new_child, self.importer)
+            a.write(new_child)
+            self.importer.project_elements[a.element_id] = new_child
 
     def _write_properties(self):
         for a in self.values:

@@ -34,16 +34,16 @@ class Dictionary:
 
     CONNECTION_TYPE = {
         #None:"Note Link",
-        #None:"Implementation",
-        #None:"Generalization",
-        #None:"Dependency",
-        #None:"Control Flow",
-        #None:"StateTransition",
-        #None:"Include",
-        #None:"Extend",
-        #None:"AssociationUseCase",
+        "Abstraction": "Implementation",
+        "Generalization": "Generalization",
+        "Dependency": "Dependency",
+        ("Transition", "ActivityGraph"): "Control Flow",
+        ("Transition", "StateMachine"): "StateTransition",
+        "Include": "Include",
+        "Extend": "Extend",
+        ("Association", "useCase"): "AssociationUseCase",
         #None:"AssociationInstance",
-        #None:"Association",
-        #None:"Agregation",
-        #None:"Compose"
+        ("Association", "normal"): "Association",
+        ("Association", "aggregate"): "Agregation",
+        ("Association", "composite"): "Compose"
     }
