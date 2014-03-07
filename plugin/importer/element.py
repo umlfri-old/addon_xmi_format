@@ -1,12 +1,14 @@
 #coding=utf-8
 __author__ = 'Michal Petrovič'
 
+import re
+
+from lxml import etree
+
 from attribute import *
 from operation import *
 from dictionary import *
 from connector import *
-from lxml import etree
-import re
 
 
 class Element:

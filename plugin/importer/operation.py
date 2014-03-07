@@ -1,10 +1,11 @@
 #coding=utf-8
 __author__ = 'Michal Petrovič'
 
-from parameter import *
-
 import re
+
 from lxml import etree
+
+from parameter import *
 
 
 class Operation:

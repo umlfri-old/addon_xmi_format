@@ -1,11 +1,11 @@
 #coding=utf-8
 __author__ = 'Michal Petrovič'
 
+from lxml import etree
+
 from element import *
 from diagram import *
 from import_dialog import *
-
-from lxml import etree
 
 
 class Importer:
@@ -36,7 +36,7 @@ class Importer:
     def _read(self):
         if self.xmi_version == "1.1":
             ns = self.xml_file.nsmap
-            xpath = ("/XMI/XMI.content//*[@name]/UML:Namespace.ownedElement/UML:Package", ns)
+            xpath = ("/XMI/XMI.content//UML:Package", ns)
             lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
             self.root = Element(lxml_element, xpath)
             self.root.type = Dictionary.ELEMENT_TYPE[self.get_tag(lxml_element)]
