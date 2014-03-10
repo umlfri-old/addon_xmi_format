@@ -53,10 +53,17 @@ class Exporter:
 
     def _write(self, parent_package):
         Element(parent_package or self.adapter.project.root, self.model_root, self.prefix, self).write()
+        self._write_data_types()
 
         xml_document = etree.ElementTree(self.root_element)
         with open(self.export_file, 'w') as f:
             xml_document.write(f, encoding="UTF-8", xml_declaration=True, pretty_print=True)
+
+    def _write_data_types(self):
+        for type_name in self.project_data_types:
+            new_data_type = etree.SubElement(self.content_children, self.prefix + "DataType")
+            new_data_type.set("xmi.id", self.project_data_types[type_name])
+            new_data_type.set("name", type_name)
 
     def _choose(self, sequence, name):
         for x in sequence:
