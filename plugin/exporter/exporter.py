@@ -19,6 +19,7 @@ class Exporter:
         self.prefix = None
 
         self.project_diagrams = {}
+        self.project_data_types = {}
 
         if self.adapter.project:
             ExportDialog(self.adapter, self.start_exporting)
@@ -48,7 +49,7 @@ class Exporter:
         self._write(parent_package)
 
     def _write(self, parent_package):
-        Element(parent_package or self.adapter.project.root, self.model_root, self.prefix).write()
+        Element(parent_package or self.adapter.project.root, self.model_root, self.prefix, self).write()
 
         xml_document = etree.ElementTree(self.root_element)
         with open(self.export_file, 'w') as f:

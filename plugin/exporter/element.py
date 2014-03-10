@@ -2,6 +2,7 @@
 __author__ = 'Michal Petrovič'
 
 from lxml import etree
+from attribute import *
 
 
 from dictionary import *
@@ -34,10 +35,11 @@ class Element:
         ("stereotype", "ModelElement.stereotype/Stereotype/@name")
     )
 
-    def __init__(self, reference, lxml_element, prefix):
+    def __init__(self, reference, lxml_element, prefix, exporter):
         self.reference = reference
         self.lxml_element = lxml_element
         self.prefix = prefix
+        self.exporter = exporter
 
         self.type = None
         self.xmi_file = None
@@ -48,7 +50,7 @@ class Element:
         self._write_tagged_values()
         self._write_children_nodes()
         self._write_childrens()
-
+        self._write_attributes()
 
     def _write_childrens(self):
         wrap_node = None
@@ -62,7 +64,7 @@ class Element:
                 else:
                     new_node = etree.SubElement(wrap_node, self.prefix + Dictionary.ELEMENT_TYPE[child.type.name])
 
-                Element(child, new_node, self.prefix).write()
+                Element(child, new_node, self.prefix, self.exporter).write()
             except KeyError:
                 continue
 
@@ -126,3 +128,13 @@ class Element:
                 print "Children node value " + a[1] + " for " + (self.reference.values["name"] or self.reference.type.name) + " is not available or supported!"
                 continue
 
+    def _write_attributes(self):
+        attr_number = dict(self.reference.all_values).get("attributes.@length")
+        wrap_node = None
+        if attr_number > 0:
+            if not wrap_node:
+                wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Classifier.feature")
+
+            for position in range(attr_number):
+                new_node = etree.SubElement(wrap_node, self.prefix + "Attribute")
+                Attribute(self.reference, new_node, position, self.prefix, self.exporter).write()
