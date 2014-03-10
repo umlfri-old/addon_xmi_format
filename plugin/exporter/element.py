@@ -101,7 +101,7 @@ class Element:
                     elif len(a) == 3 and not callable(a[2]):
                         value = a[2][self.reference.values[a[0]]]
 
-                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=value)
+                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=a[1], value=value)
             except KeyError:
                 print "Tagged value " + a[1] + " for " + (self.reference.values["name"] or self.reference.type.name) + " is not available or supported!"
                 continue
