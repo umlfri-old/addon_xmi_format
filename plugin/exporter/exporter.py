@@ -15,6 +15,8 @@ class Exporter:
         self.export_file = export_file
 
         self.root_element = None
+        self.content = None
+        self.content_children = None
         self.model_root = None
         self.prefix = None
 
@@ -39,9 +41,10 @@ class Exporter:
         etree.SubElement(doc, "XMI.exporter").text = "UML .FRI"
         etree.SubElement(doc, "XMI.exporterVersion").text = "1.0"
 
-        content = etree.SubElement(self.root_element, "XMI.content")
-        model = etree.SubElement(content, self.prefix + "Model")
-        self.model_root = etree.SubElement(model, self.prefix + "Package")
+        self.content = etree.SubElement(self.root_element, "XMI.content")
+        model = etree.SubElement(self.content, self.prefix + "Model")
+        self.content_children = etree.SubElement(model, self.prefix + "Namespace.ownedElement")
+        self.model_root = etree.SubElement(self.content_children, self.prefix + "Package")
         return self.model_root
 
     def start_exporting(self, parent_package=None):
