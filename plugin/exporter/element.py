@@ -3,9 +3,9 @@ __author__ = 'Michal Petrovič'
 
 from lxml import etree
 from attribute import *
-
-
+from operation import *
 from dictionary import *
+
 
 class Element:
 
@@ -51,6 +51,7 @@ class Element:
         self._write_children_nodes()
         self._write_childrens()
         self._write_attributes()
+        self._write_operations()
 
     def _write_childrens(self):
         wrap_node = None
@@ -130,7 +131,7 @@ class Element:
 
     def _write_attributes(self):
         attr_number = dict(self.reference.all_values).get("attributes.@length")
-        wrap_node = None
+        wrap_node = (self.lxml_element.xpath("UML:Classifier.feature", namespaces=self.lxml_element.nsmap) or (None,))[0]
         if attr_number > 0:
             if not wrap_node:
                 wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Classifier.feature")
@@ -138,3 +139,14 @@ class Element:
             for position in range(attr_number):
                 new_node = etree.SubElement(wrap_node, self.prefix + "Attribute")
                 Attribute(self.reference, new_node, position, self.prefix, self.exporter).write()
+
+    def _write_operations(self):
+        operations_number = dict(self.reference.all_values).get("operations.@length")
+        wrap_node = (self.lxml_element.xpath("UML:Classifier.feature", namespaces=self.lxml_element.nsmap) or (None,))[0]
+        if operations_number > 0:
+            if not wrap_node:
+                wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Classifier.feature")
+
+            for position in range(operations_number):
+                new_node = etree.SubElement(wrap_node, self.prefix + "Operation")
+                Operation(self.reference, new_node, position, self.prefix, self.exporter).write()
