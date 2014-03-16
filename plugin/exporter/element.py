@@ -56,7 +56,7 @@ class Element:
     def _write_childrens(self):
         wrap_node = None
         for child in self.reference.children:
-            if not wrap_node:
+            if wrap_node is None:
                 wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Namespace.ownedElement")
             try:
                 if isinstance(Dictionary.ELEMENT_TYPE.get(child.type.name), tuple):
@@ -92,7 +92,7 @@ class Element:
         for a in Element.TAGGED_VALUES:
             try:
                 if dict(self.reference.all_values).get(a[0]):
-                    if not wrap_node:
+                    if wrap_node is None:
                         wrap_node = etree.SubElement(self.lxml_element, self.prefix + "ModelElement.taggedValue")
 
                     if len(a) == 2:
@@ -133,7 +133,7 @@ class Element:
         attr_number = dict(self.reference.all_values).get("attributes.@length")
         wrap_node = (self.lxml_element.xpath("UML:Classifier.feature", namespaces=self.lxml_element.nsmap) or (None,))[0]
         if attr_number > 0:
-            if not wrap_node:
+            if wrap_node is None:
                 wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Classifier.feature")
 
             for position in range(attr_number):
@@ -144,7 +144,7 @@ class Element:
         operations_number = dict(self.reference.all_values).get("operations.@length")
         wrap_node = (self.lxml_element.xpath("UML:Classifier.feature", namespaces=self.lxml_element.nsmap) or (None,))[0]
         if operations_number > 0:
-            if not wrap_node:
+            if wrap_node is None:
                 wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Classifier.feature")
 
             for position in range(operations_number):

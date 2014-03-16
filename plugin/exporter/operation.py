@@ -95,7 +95,7 @@ class Operation:
         for a in Operation.TAGGED_VALUES:
             try:
                 if dict(self.values).get(a[0]):
-                    if not wrap_node:
+                    if wrap_node is None:
                         wrap_node = etree.SubElement(self.lxml_element, self.prefix + "ModelElement.taggedValue")
 
                     if len(a) == 2:

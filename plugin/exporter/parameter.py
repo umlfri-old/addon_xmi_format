@@ -83,7 +83,7 @@ class Parameter:
         for a in Parameter.TAGGED_VALUES:
             try:
                 if dict(self.values).get(a[0]):
-                    if wrap_node is not None:
+                    if wrap_node is None:
                         wrap_node = etree.SubElement(self.lxml_element, self.prefix + "ModelElement.taggedValue")
 
                     if len(a) == 2:
