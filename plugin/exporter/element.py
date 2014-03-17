@@ -71,6 +71,7 @@ class Element:
 
     def _write_xml_attributes(self):
         self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.reference)))
+        self.lxml_element.set("namespace", self.lxml_element.xpath("(ancestor::*/@xmi.id)[last()]", namespaces=self.lxml_element.nsmap)[0])
 
         for a in Element.ATRIBUTES:
             try:
