@@ -55,7 +55,7 @@ class Attribute:
         self._write_data_type()
 
     def _write_xml_attributes(self):
-        self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.parent_reference)) + "attrib" + unicode(self.position))
+        self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.parent_reference)) + ".A_" + unicode(self.position))
         self.lxml_element.set("owner", "ID_" + unicode(id(self.parent_reference)))
 
         for a in Attribute.ATRIBUTES:

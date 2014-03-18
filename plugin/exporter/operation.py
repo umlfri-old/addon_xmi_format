@@ -72,7 +72,7 @@ class Operation:
         self._write_parameters()
 
     def _write_xml_attributes(self):
-        self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.parent_reference)) + "_O" + unicode(self.position))
+        self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.parent_reference)) + ".O_" + unicode(self.position))
         self.lxml_element.set("owner", "ID_" + unicode(id(self.parent_reference)))
 
         for a in Operation.ATRIBUTES:
