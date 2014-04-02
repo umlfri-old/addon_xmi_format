@@ -33,17 +33,17 @@ class Dictionary:
     }
 
     CONNECTION_TYPE = {
-        #None:"Note Link",
-        "Abstraction": "Implementation",
+        #"Note Link": None,
+        "Implementation": "Abstraction",
         "Generalization": "Generalization",
         "Dependency": "Dependency",
-        ("Transition", "ActivityGraph"): "Control Flow",
-        ("Transition", "StateMachine"): "StateTransition",
+        "Control Flow": ("Transition", "ActivityGraph"),
+        "StateTransition": ("Transition", "StateMachine"),
         "Include": "Include",
         "Extend": "Extend",
-        ("Association", "useCase"): "AssociationUseCase",
-        #None:"AssociationInstance",
-        ("Association", "normal"): "Association",
-        ("Association", "aggregate"): "Agregation",
-        ("Association", "composite"): "Compose"
+        "AssociationUseCase": "Association",
+        "AssociationInstance": "Association",
+        "Association": "Association",
+        "Agregation": ("Association", "aggregate"),
+        "Compose": ("Association", "composite")
     }

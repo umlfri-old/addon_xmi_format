@@ -21,6 +21,7 @@ class Exporter:
         self.prefix = None
 
         self.project_diagrams = {}
+        self.exported_connectors = []
         self.project_data_types = {}
 
         if self.adapter.project:
@@ -53,7 +54,7 @@ class Exporter:
         self._write(parent_package)
 
     def _write(self, parent_package):
-        Element(parent_package or self.adapter.project.root, self.model_root, self.prefix, self).write()
+        Element(None, parent_package or self.adapter.project.root, self.model_root, self.prefix, self).write()
         self._write_data_types()
 
         xml_document = etree.ElementTree(self.root_element)
