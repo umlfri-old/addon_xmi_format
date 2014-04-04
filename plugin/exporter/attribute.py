@@ -39,7 +39,7 @@ class Attribute:
         self.exporter = exporter
 
         self.values = self._extract_values()
-        self.element_id = "E-" + self.parent_reference._ElementObject__id + \
+        self.element_id = "E-" + self.parent_reference.__id__ + \
                           "-A-" + str(self.position)
 
     def _extract_values(self):
@@ -57,7 +57,7 @@ class Attribute:
 
     def _write_xml_attributes(self):
         self.lxml_element.set("xmi.id", self.element_id)
-        self.lxml_element.set("owner", self.parent_reference._ElementObject__id)
+        self.lxml_element.set("owner", "E-" + self.parent_reference.__id__)
 
         for a in Attribute.ATRIBUTES:
             try:

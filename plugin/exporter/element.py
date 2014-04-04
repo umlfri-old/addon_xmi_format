@@ -50,7 +50,7 @@ class Element:
 
         self.type = None
         self.xmi_file = None
-        self.element_id = "E-" + self.reference._ElementObject__id
+        self.element_id = "E-" + self.reference.__id__
 
         self._read_diagrams()
 

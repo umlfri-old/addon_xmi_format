@@ -22,7 +22,7 @@ class Diagram:
         self.prefix = prefix
 
         self._diagram_elements_wraper = None
-        self.element_id = "D-" + self.reference._Diagram__id
+        self.element_id = "D-" + self.reference.__id__
 
     def write(self):
         self._write_xml_attributes()
@@ -32,7 +32,7 @@ class Diagram:
 
     def _write_xml_attributes(self):
         self.lxml_element.set("xmi.id", self.element_id)
-        self.lxml_element.set("owner", "E-" + self.parent._ElementObject__id)
+        self.lxml_element.set("owner", "E-" + self.parent.__id__)
 
         for a in Diagram.ATRIBUTES:
             try:
@@ -83,7 +83,7 @@ class Diagram:
                        ";Bottom=" + str(element.square[1][1])
 
             diagram_element.set("geometry", geometry)
-            diagram_element.set("subject", "E-" + element.object._ElementObject__id)
+            diagram_element.set("subject", "E-" + element.object.__id__)
             diagram_element.set("seqno", str(seqno))
 
             seqno += 1
@@ -94,4 +94,4 @@ class Diagram:
                 self._diagram_elements_wraper = etree.SubElement(self.lxml_element, self.prefix + "Diagram.element")
 
             diagram_element = etree.SubElement(self._diagram_elements_wraper, self.prefix + "DiagramElement")
-            diagram_element.set("subject", "C-" + element.object._ConnectionObject__id)
+            diagram_element.set("subject", "C-" + element.object.__id__)

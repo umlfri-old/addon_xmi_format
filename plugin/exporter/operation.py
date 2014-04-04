@@ -57,7 +57,7 @@ class Operation:
         self.exporter = exporter
 
         self.values = self._extract_values()
-        self.element_id = "E-" + self.parent_reference._ElementObject__id + \
+        self.element_id = "E-" + self.parent_reference.__id__ + \
                           "-O-" + str(self.position)
 
     def _extract_values(self):
@@ -75,7 +75,7 @@ class Operation:
 
     def _write_xml_attributes(self):
         self.lxml_element.set("xmi.id", self.element_id)
-        self.lxml_element.set("owner", "ID_" + unicode(id(self.parent_reference)))
+        self.lxml_element.set("owner", "E-" + self.parent_reference.__id__)
 
         for a in Operation.ATRIBUTES:
             try:

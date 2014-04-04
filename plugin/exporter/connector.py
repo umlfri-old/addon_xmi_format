@@ -43,7 +43,7 @@ class Connector:
         self.prefix = prefix
         self.exporter = exporter
 
-        self.element_id = "C-" + self.reference._ConnectionObject__id
+        self.element_id = "C-" + self.reference.__id__
         self.asociation_ends = []
 
     def write(self):
@@ -72,7 +72,7 @@ class Connector:
             nodes = (self.lxml_element,) * 2
 
         names = Connector.SOURCE_TO_DESTINATION[self.reference.type.name]
-        values = ("E-" + self.reference.source._ElementObject__id, "E-" + self.reference.destination._ElementObject__id)
+        values = ("E-" + self.reference.source.__id__, "E-" + self.reference.destination.__id__)
 
         for n in range(2):
             nodes[n].set(names[n], values[n])

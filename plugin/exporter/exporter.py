@@ -45,7 +45,7 @@ class Exporter:
 
         self.content = etree.SubElement(self.root_element, "XMI.content")
         model = etree.SubElement(self.content, self.prefix + "Model")
-        model.set("xmi.id", "ID_" + unicode(id(model)))
+        model.set("xmi.id", "M-" + self.adapter.project.__id__)
         self.content_children = etree.SubElement(model, self.prefix + "Namespace.ownedElement")
         self.model_root = etree.SubElement(self.content_children, self.prefix + "Package")
         return self.model_root

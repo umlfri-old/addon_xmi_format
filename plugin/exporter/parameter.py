@@ -40,7 +40,7 @@ class Parameter:
         self.exporter = exporter
 
         self.values = self._extract_values()
-        self.element_id = "E-" + self.parent_reference._ElementObject__id + \
+        self.element_id = "E-" + self.parent_reference.__id__ + \
                           "-O-" + str(self.operation_position) + \
                           "-P-" + str(self.position)
 
