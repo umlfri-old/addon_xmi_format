@@ -1,7 +1,6 @@
 #coding=utf-8
 __author__ = 'Michal Petrovič'
 
-import re
 from lxml import etree
 
 class Attribute:
@@ -40,6 +39,8 @@ class Attribute:
         self.exporter = exporter
 
         self.values = self._extract_values()
+        self.element_id = "E-" + self.parent_reference._ElementObject__id + \
+                          "-A-" + str(self.position)
 
     def _extract_values(self):
         extracted = []
@@ -55,8 +56,8 @@ class Attribute:
         self._write_data_type()
 
     def _write_xml_attributes(self):
-        self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.parent_reference)) + ".A_" + unicode(self.position))
-        self.lxml_element.set("owner", "ID_" + unicode(id(self.parent_reference)))
+        self.lxml_element.set("xmi.id", self.element_id)
+        self.lxml_element.set("owner", self.parent_reference._ElementObject__id)
 
         for a in Attribute.ATRIBUTES:
             try:
@@ -120,6 +121,6 @@ class Attribute:
             if self.values.get("type") in self.exporter.project_data_types:
                 self.lxml_element.set("type", self.exporter.project_data_types[self.values.get("type")])
             else:
-                new_type_id = "TYPE_" + str(id(self.values.get("type")))
+                new_type_id = "TYPE-" + str(hash(self.values.get("type")))
                 self.lxml_element.set("type", new_type_id)
                 self.exporter.project_data_types[self.values.get("type")] = new_type_id

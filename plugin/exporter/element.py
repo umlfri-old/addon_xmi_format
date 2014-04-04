@@ -50,7 +50,7 @@ class Element:
 
         self.type = None
         self.xmi_file = None
-        self.element_id = None
+        self.element_id = "E-" + self.reference._ElementObject__id
 
         self._read_diagrams()
 
@@ -82,7 +82,7 @@ class Element:
                 continue
 
     def _write_xml_attributes(self):
-        self.lxml_element.set("xmi.id", "ID_" + unicode(id(self.reference)))                # _ElementObject__id
+        self.lxml_element.set("xmi.id", self.element_id)
         self.lxml_element.set("namespace", self.lxml_element.xpath("(ancestor::*/@xmi.id)[last()]", namespaces=self.lxml_element.nsmap)[0])
 
         for a in Element.ATRIBUTES:

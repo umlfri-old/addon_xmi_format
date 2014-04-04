@@ -40,6 +40,9 @@ class Parameter:
         self.exporter = exporter
 
         self.values = self._extract_values()
+        self.element_id = "E-" + self.parent_reference._ElementObject__id + \
+                          "-O-" + str(self.operation_position) + \
+                          "-P-" + str(self.position)
 
     def write(self):
         self._write_xml_attributes()
@@ -57,11 +60,7 @@ class Parameter:
         return dict(extracted)
 
     def _write_xml_attributes(self):
-        self.lxml_element.set(
-            "xmi.id", "ID_" + unicode(id(self.parent_reference)) +
-                      ".O_" + unicode(self.position) +
-                      ".P_" + unicode(self.position)
-        )
+        self.lxml_element.set("xmi.id", self.element_id)
 
         for a in Parameter.ATRIBUTES:
             try:
@@ -125,6 +124,6 @@ class Parameter:
             if self.values.get("type") in self.exporter.project_data_types:
                 self.lxml_element.set("type", self.exporter.project_data_types[self.values.get("type")])
             else:
-                new_type_id = "TYPE_" + str(id(self.values.get("type")))
+                new_type_id = "TYPE-" + str(hash(self.values.get("type")))
                 self.lxml_element.set("type", new_type_id)
                 self.exporter.project_data_types[self.values.get("type")] = new_type_id
