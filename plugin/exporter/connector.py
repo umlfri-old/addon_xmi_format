@@ -33,7 +33,8 @@ class Connector:
         "Agregation": ("type", "type"),
         "Compose": ("type", "type"),
         "Control Flow": ("source", "target"),
-        "StateTransition": ("source", "target")
+        "StateTransition": ("source", "target"),
+        "Note Link": ("source", "target")
     }
 
     def __init__(self, reference, lxml_element, kind, prefix, exporter):

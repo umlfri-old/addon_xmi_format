@@ -24,16 +24,16 @@ class Dictionary:
         "Comment": "Note",
         #None: "Merge",
         "SimpleState": "State",
-        #None: "VerticalSynchronization",
+        ("Pseudostate", "vjoin"): "VerticalSynchronization",
         ("Pseudostate", "join"): "HorizontalSynchronization",
         ("Pseudostate", "fork"): "HorizontalSynchronization",
         "ActionState": "Activity",
-        "Interface": "Interface"
-        #None: "Boundary"
+        "Interface": "Interface",
+        "Boundary": "Boundary"
     }
 
     CONNECTION_TYPE = {
-        #None:"Note Link",
+        "NoteLink": "Note Link",
         "Abstraction": "Implementation",
         "Generalization": "Generalization",
         "Dependency": "Dependency",

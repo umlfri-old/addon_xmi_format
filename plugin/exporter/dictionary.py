@@ -22,18 +22,19 @@ class Dictionary:
         "Actor": "Actor",
         "Class": "Class",
         "Note": "Comment",
-        #None: "Merge",
+        "Merge": ("Pseudostate", "branch"),
         "State": "SimpleState",
-        #None: "VerticalSynchronization",
+        "VerticalSynchronization": ("Pseudostate", "vjoin"),
+        #"VerticalSynchronization": ("Pseudostate", "vfork"),
         "HorizontalSynchronization": ("Pseudostate", "join"),
-        # ("Pseudostate", "fork"): "HorizontalSynchronization",
+        #"HorizontalSynchronization": ("Pseudostate", "fork"),
         "Activity": "ActionState",
         "Interface": "Interface",
         "Boundary": "Boundary"
     }
 
     CONNECTION_TYPE = {
-        #"Note Link": None,
+        "Note Link": "NoteLink",
         "Implementation": "Abstraction",
         "Generalization": "Generalization",
         "Dependency": "Dependency",
