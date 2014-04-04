@@ -5,11 +5,11 @@ __author__ = 'Michal Petrovič'
 class Dictionary:
 
     DIAGRAM_TYPE = {
-        "UseCaseDiagram": "Use Case diagram",
-        "ObjectDiagram": "Object diagram",
-        "ClassDiagram": "Class diagram",
-        "ActivityDiagram": "Activity diagram",
-        "StateDiagram": "State diagram"
+        "Use Case diagram": "UseCaseDiagram",
+        "Object diagram": "ObjectDiagram",
+        "Class diagram": "ClassDiagram",
+        "Activity diagram": "ActivityDiagram",
+        "State diagram": "StateDiagram"
     }
 
     ELEMENT_TYPE = {

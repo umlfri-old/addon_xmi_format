@@ -6,6 +6,7 @@ import datetime
 
 from element import *
 from export_dialog import *
+from diagram import *
 
 
 class Exporter:
@@ -20,8 +21,8 @@ class Exporter:
         self.model_root = None
         self.prefix = None
 
-        self.project_diagrams = {}
         self.exported_connectors = []
+        self.project_diagrams = {}
         self.project_data_types = {}
 
         if self.adapter.project:
@@ -56,6 +57,7 @@ class Exporter:
     def _write(self, parent_package):
         Element(None, parent_package or self.adapter.project.root, self.model_root, self.prefix, self).write()
         self._write_data_types()
+        self._write_diagrams()
 
         xml_document = etree.ElementTree(self.root_element)
         with open(self.export_file, 'w') as f:
@@ -66,6 +68,15 @@ class Exporter:
             new_data_type = etree.SubElement(self.content_children, self.prefix + "DataType")
             new_data_type.set("xmi.id", self.project_data_types[type_name])
             new_data_type.set("name", type_name)
+
+    def _write_diagrams(self):
+        for diagram in self.project_diagrams:
+            try:
+                new_node = etree.SubElement(self.content, self.prefix + "Diagram", diagramType=Dictionary.DIAGRAM_TYPE[diagram.type.name])
+                Diagram(self.project_diagrams[diagram], diagram, new_node, self.prefix).write()
+
+            except KeyError:
+                print "Diagram type " + diagram.type.name + "is not supported!"
 
     def _choose(self, sequence, name):
         for x in sequence:

@@ -35,7 +35,7 @@ class Element:
         ("stereotype", "ModelElement.stereotype/Stereotype/@name")
     )
 
-    def __init__(self,parent, reference, lxml_element, prefix, exporter):
+    def __init__(self, parent, reference, lxml_element, prefix, exporter):
         self.parent = parent
         self.reference = reference
         self.lxml_element = lxml_element
@@ -51,6 +51,8 @@ class Element:
         self.type = None
         self.xmi_file = None
         self.element_id = None
+
+        self._read_diagrams()
 
     def write(self):
         self._write_xml_attributes()
@@ -212,3 +214,7 @@ class Element:
                 except KeyError:
                     continue
 
+    def _read_diagrams(self):
+        for diagram in self.reference.diagrams:
+            if diagram not in self.exporter.project_diagrams:
+                self.exporter.project_diagrams[diagram] = self.reference
