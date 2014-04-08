@@ -34,14 +34,20 @@ class Importer:
         self._write(parent_package)
 
     def _read(self):
-        if self.xmi_version == "1.1":
-            ns = self.xml_file.nsmap
-            xpath = ("/XMI/XMI.content//UML:Package", ns)
-            lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
-            self.root = Element(lxml_element, xpath)
-            self.root.type = Dictionary.ELEMENT_TYPE[self.get_tag(lxml_element)]
-            self.root.read(self.xml_file, self)
-            self._read_diagrams()
+        lxml_element = (self.xml_file.xpath("/XMI/XMI.content//UML:Package", namespaces=self.xml_file.nsmap) or (None, ))[0]
+        if lxml_element is not None:
+            xpath = ("/XMI/XMI.content//UML:Package", self.xml_file.nsmap)
+
+        else:
+            if (self.xml_file.xpath("/XMI/XMI.content//UML:Model/UML:Namespace.ownedElement", namespaces=self.xml_file.nsmap) or (None, ))[0] is not None:
+                xpath = ("/XMI/XMI.content//UML:Model", self.xml_file.nsmap)
+                lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
+
+        self.root = Element(lxml_element, xpath)
+        self.root.type = Dictionary.ELEMENT_TYPE.get(self.get_tag(lxml_element)) or Dictionary.ELEMENT_TYPE.get("Package")
+        self.root.read(self.xml_file, self)
+        self._read_diagrams()
+
 
     def _read_diagrams(self):
         diagrams = self.xml_file.xpath("/XMI/XMI.content/UML:Diagram", namespaces=self.xml_file.nsmap)
