@@ -32,9 +32,8 @@ class Attribute:
         ("default", "UML:Attribute.initialValue/UML:Expression/@body")
     )
 
-    def __init__(self, lxml_element, xpath):
+    def __init__(self, lxml_element):
         self.lxml_element = lxml_element
-        self.xpath = xpath
         self.values = {}
 
         self.position = None
@@ -73,7 +72,7 @@ class Attribute:
                     continue
 
     def _read_tagged_values(self):
-        pos = self.lxml_element.xpath("UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + "position" + "']/@value", namespaces=self.xpath[1])
+        pos = self.lxml_element.xpath("UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + "position" + "']/@value", namespaces=self.xmi_file.nsmap)
         if pos:
             self.position = pos[0]
         
@@ -81,7 +80,7 @@ class Attribute:
             try:
                 tag_value = self.lxml_element.xpath(
                     "UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + a[1] + "']/@value",
-                    namespaces=self.xpath[1]
+                    namespaces=self.xmi_file.nsmap
                 )
 
                 if tag_value:
@@ -100,7 +99,7 @@ class Attribute:
     def _read_children_nodes(self):
         for a in Attribute.CHILDREN_NODES:
             try:
-                node_value = self.lxml_element.xpath(a[1], namespaces=self.xpath[1])
+                node_value = self.lxml_element.xpath(a[1], namespaces=self.xmi_file.nsmap)
 
                 if node_value:
                     if len(a) == 2:
@@ -118,15 +117,15 @@ class Attribute:
     def _read_data_type(self):
         type_id = self.lxml_element.attrib.get("type")
         if not type_id:
-            type_id = self.lxml_element.xpath("UML:StructuralFeature.type/UML:Classifier/@*", namespaces=self.xpath[1])
+            type_id = self.lxml_element.xpath("UML:StructuralFeature.type/UML:Classifier/@*", namespaces=self.xmi_file.nsmap)
             if type_id:
                 type_id = type_id[0]
             else:
                 return
 
-        type_name = self.xmi_file.xpath("//UML:DataType[@xmi.id='" + type_id + "']/@name", namespaces=self.xpath[1])
+        type_name = self.xmi_file.xpath("//UML:DataType[@xmi.id='" + type_id + "']/@name", namespaces=self.xmi_file.nsmap)
         if not type_name:
-            type_name = self.xmi_file.xpath("//*[@xmi.id='" + type_id + "']/@name", namespaces=self.xpath[1])
+            type_name = self.xmi_file.xpath("//*[@xmi.id='" + type_id + "']/@name", namespaces=self.xmi_file.nsmap)
             if type_name:
                 type_name = type_name[0]
             else:

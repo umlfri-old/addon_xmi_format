@@ -39,9 +39,8 @@ class Element:
         ("stereotype", "UML:ModelElement.stereotype/UML:Stereotype/@name")
     )
 
-    def __init__(self, lxml_element, xpath=None):
+    def __init__(self, lxml_element):
         self.lxml_element = lxml_element
-        self.xpath = xpath
 
         self.diagrams = []
         self.childrens = []
@@ -77,14 +76,14 @@ class Element:
         self._write_operations()
 
     def _read_childrens(self):
-        owned_elements = self.lxml_element.xpath("UML:Namespace.ownedElement/*", namespaces=self.xpath[1]) +\
-                        self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xpath[1]) +\
-                        self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xpath[1])
+        owned_elements = self.lxml_element.xpath("UML:Namespace.ownedElement/*", namespaces=self.xmi_file.nsmap) +\
+                        self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xmi_file.nsmap) +\
+                        self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.top/UML:CompositeState/UML:CompositeState.subvertex/*", namespaces=self.xmi_file.nsmap)
 
         if owned_elements:
             for child in owned_elements:
                 if ((child.get("kind") and (self._get_tag(child), child.get("kind"))) or self._get_tag(child)) in Dictionary.ELEMENT_TYPE:
-                    new_element = Element(child, (etree.ElementTree(self.lxml_element).getpath(self.lxml_element), self.xpath[1]))
+                    new_element = Element(child)
                     new_element.type = Dictionary.ELEMENT_TYPE[((child.get("kind") and (self._get_tag(child), child.get("kind"))) or self._get_tag(child))]
                     new_element.read(self.xmi_file, self.importer)
                     self.childrens.append(new_element)
@@ -113,7 +112,7 @@ class Element:
             try:
                 tag_value = self.lxml_element.xpath(
                     "UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + a[1] + "']/@value",
-                    namespaces=self.xpath[1]
+                    namespaces=self.xmi_file.nsmap
                 )
 
                 if tag_value:
@@ -133,7 +132,7 @@ class Element:
         for a in Element.TAGGED_VALUES:
             try:
 
-                node_value = self.lxml_element.xpath(a[1], namespaces=self.xpath[1])
+                node_value = self.lxml_element.xpath(a[1], namespaces=self.xmi_file.nsmap)
 
                 if node_value:
                     if len(a) == 2:
@@ -149,43 +148,43 @@ class Element:
                 continue
 
     def _read_attributes(self):
-        attributes = self.lxml_element.xpath("UML:Classifier.feature/UML:Attribute", namespaces=self.xpath[1])
+        attributes = self.lxml_element.xpath("UML:Classifier.feature/UML:Attribute", namespaces=self.xmi_file.nsmap)
 
         for attribute in attributes:
-            new_attribute = Attribute(attribute, (etree.ElementTree(self.lxml_element).getpath(attribute), self.xpath[1]))
+            new_attribute = Attribute(attribute)
             new_attribute.read(self.xmi_file)
             self.atributes.append(new_attribute)
 
     def _read_operations(self):
-        operations = self.lxml_element.xpath("UML:Classifier.feature/UML:Operation", namespaces=self.xpath[1])
+        operations = self.lxml_element.xpath("UML:Classifier.feature/UML:Operation", namespaces=self.xmi_file.nsmap)
 
         for operation in operations:
-            new_operation = Operation(operation, (etree.ElementTree(self.lxml_element).getpath(operation), self.xpath[1]))
+            new_operation = Operation(operation)
             new_operation.read(self.xmi_file)
             self.operations.append(new_operation)
 
     def _read_connectors(self, owned_element):
-        owned_element += self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.transitions/*", namespaces=self.xpath[1]) + \
-            self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.transitions/*", namespaces=self.xpath[1])
+        owned_element += self.lxml_element.xpath("UML:Namespace.ownedElement/UML:ActivityGraph/UML:StateMachine.transitions/*", namespaces=self.xmi_file.nsmap) + \
+            self.lxml_element.xpath("UML:Namespace.ownedElement/UML:StateMachine/UML:StateMachine.transitions/*", namespaces=self.xmi_file.nsmap)
 
         for connector in owned_element:
             possible_type = [
                 self._get_tag(connector),
-                (self._get_tag(connector), self._get_tag((connector.xpath("../..", namespaces=self.xpath[1]) or ("",))[0])),
-                (self._get_tag(connector), (connector.xpath("*/*[@aggregation!='none']/@aggregation", namespaces=self.xpath[1]) or ("",))[0]),
-                (self._get_tag(connector), connector.xpath("*/*/@aggregation!='none'", namespaces=self.xpath[1]) or "normal")
+                (self._get_tag(connector), self._get_tag((connector.xpath("../..", namespaces=self.xmi_file.nsmap) or ("",))[0])),
+                (self._get_tag(connector), (connector.xpath("*/*[@aggregation!='none']/@aggregation", namespaces=self.xmi_file.nsmap) or ("",))[0]),
+                (self._get_tag(connector), connector.xpath("*/*/@aggregation!='none'", namespaces=self.xmi_file.nsmap) or "normal")
             ]
 
             #check for use case association
-            end_id = connector.xpath("UML:Association.connection/UML:AssociationEnd/@type", namespaces=self.xpath[1])
-            end_type = [(connector.xpath("//*[@xmi.id='" + x + "']", namespaces=self.xpath[1]) or ("",))[0] for x in end_id]
+            end_id = connector.xpath("UML:Association.connection/UML:AssociationEnd/@type", namespaces=self.xmi_file.nsmap)
+            end_type = [(connector.xpath("//*[@xmi.id='" + x + "']", namespaces=self.xmi_file.nsmap) or ("",))[0] for x in end_id]
             if any(self._get_tag(x) in ("UseCase", "Actor") for x in end_type) and ("Association", "normal") in possible_type:
                 possible_type.remove(("Association", "normal"))
                 possible_type.append((self._get_tag(connector), "useCase"))
 
             intersection = set(Dictionary.CONNECTION_TYPE).intersection(possible_type)
             if len(intersection) == 1:
-                new_connector = Connector(connector, (etree.ElementTree(self.lxml_element).getpath(connector), self.xpath[1]))
+                new_connector = Connector(connector)
                 new_connector.type = Dictionary.CONNECTION_TYPE.get(list(intersection)[0])
                 new_connector.read(self.xmi_file)
                 self.importer.project_connectors.append(new_connector)

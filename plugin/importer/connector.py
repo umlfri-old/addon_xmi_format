@@ -34,31 +34,8 @@ class Connector:
     SOURCE = ("type", "subtype", "client", "source", "extension", "base", "child")
     DESTINATION = ("type", "supertype", "supplier", "target", "addition", "base", "parent")
 
-
-
-    PROPERTIES = (
-        #("name", 1),
-        #("stereotype", 46),
-        #("note", 3,lambda x:re.sub("<(.*?)>",'',x or "")),
-        ("direction", 2,
-         {
-             "Unspecified": "Unspecified",
-             "Source -> Destination": "Source to Destination",
-             "Destination -> Source": "Destination to Source",
-             "Bi-Directional": "Bidirectional"
-         }
-         ),
-        #("SCardinality", 6),
-        #("DCardinality", 9),
-        #("SRole", 12),
-        #("DRole", 19),
-        #("guard", 50),
-        #("weight", 51)                                                          # nie je podporovane
-    )
-
-    def __init__(self, lxml_element, xpath):
+    def __init__(self, lxml_element):
         self.lxml_element = lxml_element
-        self.xpath = xpath
 
         self.source_id = None
         self.dest_id = None
@@ -69,7 +46,6 @@ class Connector:
 
         self.xmi_file = None
         self.reference = None
-
 
     def read(self, xmi_file):
         self.xmi_file = xmi_file
@@ -90,7 +66,7 @@ class Connector:
         nodes.append((self.lxml_element,))
 
         if self._get_tag(self.lxml_element) == "Association":
-            nodes.append(self.lxml_element.xpath("UML:Association.connection/UML:AssociationEnd", namespaces=self.xpath[1]))
+            nodes.append(self.lxml_element.xpath("UML:Association.connection/UML:AssociationEnd", namespaces=self.xmi_file.nsmap))
 
         for attr_name in Connector.SOURCE:
             s_id = nodes[len(nodes) - 1][0].get(attr_name)
@@ -139,10 +115,10 @@ class Connector:
             try:
                 tag_value = self.lxml_element.xpath(
                     "UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + a[1] + "']/@value",
-                    namespaces=self.xpath[1]) or \
+                    namespaces=self.xmi_file.nsmap) or \
                     self.lxml_element.xpath(
                         "//UML:TaggedValue[@tag='" + a[1] + "'][@modelElement='" + self.element_id + "']/@value",
-                        namespaces=self.xpath[1]
+                        namespaces=self.xmi_file.nsmap
                     )
 
                 if tag_value:
@@ -163,7 +139,7 @@ class Connector:
         nodes.append((self.lxml_element,))
 
         if self._get_tag(self.lxml_element) == "Association":
-            nodes.append(self.lxml_element.xpath("UML:Association.connection/UML:AssociationEnd", namespaces=self.xpath[1]))
+            nodes.append(self.lxml_element.xpath("UML:Association.connection/UML:AssociationEnd", namespaces=self.xmi_file.nsmap))
 
         for a in Connector.CHILDREN_NODES:
             try:
@@ -177,7 +153,7 @@ class Connector:
                     continue
 
                 for f in range(n):
-                    node_value = nodes[n - 1][f].xpath(a[1], namespaces=self.xpath[1])
+                    node_value = nodes[n - 1][f].xpath(a[1], namespaces=self.xmi_file.nsmap)
 
                     if node_value:
                         if isinstance(node_value, list):
@@ -201,7 +177,7 @@ class Connector:
     def _read_direction(self):
         direction = "Unspecified"
         if self.type == "Association":
-            nodes = (self.lxml_element.xpath("UML:Association.connection/UML:AssociationEnd", namespaces=self.xpath[1]))
+            nodes = (self.lxml_element.xpath("UML:Association.connection/UML:AssociationEnd", namespaces=self.xmi_file.nsmap))
 
             transform = {
                 "true": True,

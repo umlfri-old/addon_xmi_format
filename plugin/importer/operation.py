@@ -2,7 +2,6 @@
 __author__ = 'Michal Petrovič'
 
 import re
-
 from lxml import etree
 
 from parameter import *
@@ -41,9 +40,8 @@ class Operation:
         ("stereotype", "UML:ModelElement.stereotype/UML:Stereotype/@name"),
     )
 
-    def __init__(self, lxml_element, xpath):
+    def __init__(self, lxml_element):
         self.lxml_element = lxml_element
-        self.xpath = xpath
 
         self.values = {}
         self.parameters = []
@@ -84,7 +82,7 @@ class Operation:
                     continue
 
     def _read_tagged_values(self):
-        pos = self.position = self.lxml_element.xpath("UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + "position" + "']/@value", namespaces=self.xpath[1])
+        pos = self.position = self.lxml_element.xpath("UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + "position" + "']/@value", namespaces=self.xmi_file.nsmap)
         if pos:
             self.position = pos[0]
 
@@ -92,7 +90,7 @@ class Operation:
             try:
                 tag_value = self.lxml_element.xpath(
                     "UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + a[1] + "']/@value",
-                    namespaces=self.xpath[1]
+                    namespaces=self.xmi_file.nsmap
                 )
 
                 if tag_value:
@@ -111,7 +109,7 @@ class Operation:
     def _read_children_nodes(self):
         for a in Operation.CHILDREN_NODES:
             try:
-                node_value = self.lxml_element.xpath(a[1], namespaces=self.xpath[1])
+                node_value = self.lxml_element.xpath(a[1], namespaces=self.xmi_file.nsmap)
 
                 if node_value:
                     if len(a) == 2:
@@ -127,10 +125,10 @@ class Operation:
                 continue
 
     def _read_parameters(self):
-        parameters = self.lxml_element.xpath("UML:BehavioralFeature.parameter/UML:Parameter", namespaces=self.xpath[1])
+        parameters = self.lxml_element.xpath("UML:BehavioralFeature.parameter/UML:Parameter", namespaces=self.xmi_file.nsmap)
 
         for parameter in parameters:
-            new_parameter = Parameter(parameter, (etree.ElementTree(self.lxml_element).getpath(parameter), self.xpath[1]))
+            new_parameter = Parameter(parameter)
 
             if parameter.attrib["kind"] == "return":
                 new_parameter.xmi_file = self.xmi_file

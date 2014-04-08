@@ -36,14 +36,12 @@ class Importer:
     def _read(self):
         lxml_element = (self.xml_file.xpath("/XMI/XMI.content//UML:Package", namespaces=self.xml_file.nsmap) or (None, ))[0]
         if lxml_element is not None:
-            xpath = ("/XMI/XMI.content//UML:Package", self.xml_file.nsmap)
-
+            pass
         else:
             if (self.xml_file.xpath("/XMI/XMI.content//UML:Model/UML:Namespace.ownedElement", namespaces=self.xml_file.nsmap) or (None, ))[0] is not None:
-                xpath = ("/XMI/XMI.content//UML:Model", self.xml_file.nsmap)
-                lxml_element = self.xml_file.xpath(xpath[0], namespaces=xpath[1])[0]
+                lxml_element = self.xml_file.xpath("/XMI/XMI.content//UML:Model", namespaces=self.xml_file.nsmap)[0]
 
-        self.root = Element(lxml_element, xpath)
+        self.root = Element(lxml_element)
         self.root.type = Dictionary.ELEMENT_TYPE.get(self.get_tag(lxml_element)) or Dictionary.ELEMENT_TYPE.get("Package")
         self.root.read(self.xml_file, self)
         self._read_diagrams()
@@ -54,7 +52,7 @@ class Importer:
 
         for diagram in diagrams:
             if diagram.get("diagramType") in Dictionary.DIAGRAM_TYPE:
-                new_diagram = Diagram(diagram, (etree.ElementTree(self.xml_file).getpath(diagram), self.xml_file.nsmap))
+                new_diagram = Diagram(diagram)
                 new_diagram.type = Dictionary.DIAGRAM_TYPE[diagram.get("diagramType")]
                 new_diagram.read(self.xml_file)
                 self.project_diagrams.append(new_diagram)

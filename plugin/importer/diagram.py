@@ -15,9 +15,8 @@ class Diagram:
 
     )
 
-    def __init__(self, lxml_element, xpath=None):
+    def __init__(self, lxml_element):
         self.lxml_element = lxml_element
-        self.xpath = xpath
 
         self.showed_objects = []
         self.values = {}
@@ -66,7 +65,7 @@ class Diagram:
             try:
                 tag_value = self.lxml_element.xpath(
                     "UML:ModelElement.taggedValue/UML:TaggedValue[@tag='" + a[1] + "']/@value",
-                    namespaces=self.xpath[1]
+                    namespaces=self.xmi_file.nsmap
                 )
 
                 if tag_value:
@@ -83,7 +82,7 @@ class Diagram:
                 continue
 
     def _read_elements(self):
-        diagram_elements = self.lxml_element.xpath("UML:Diagram.element/UML:DiagramElement", namespaces=self.xpath[1])
+        diagram_elements = self.lxml_element.xpath("UML:Diagram.element/UML:DiagramElement", namespaces=self.xmi_file.nsmap)
 
         for element in diagram_elements:
             self.showed_objects.append(element.get("subject"))
