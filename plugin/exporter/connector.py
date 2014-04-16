@@ -58,10 +58,10 @@ class Connector:
         if self.reference.type.name in ("AssociationUseCase", "AssociationInstance", "Association", "Agregation", "Compose"):
             wrap_node = etree.SubElement(self.lxml_element, self.prefix + "Association.connection")
             for _ in range(2):
-                self.asociation_ends.append(etree.SubElement(wrap_node, self.prefix + "AssociationEnd", association=self.element_id))
+                self.asociation_ends.append(etree.SubElement(wrap_node, self.prefix + "AssociationEnd", association=unicode(self.element_id)))
 
             self.asociation_ends[0].set("aggregation", "none")
-            self.asociation_ends[1].set("aggregation", self.kind or "none")
+            self.asociation_ends[1].set("aggregation", unicode(self.kind) or "none")
 
     def _write_xml_attributes(self):
         self.lxml_element.set("xmi.id", self.element_id)
@@ -100,9 +100,9 @@ class Connector:
                             value = a[2][attribute_value]
 
                         if n == 2:
-                            self.asociation_ends[f].set(a[1], value)
+                            self.asociation_ends[f].set(a[1], unicode(value))
                         else:
-                            self.lxml_element.set(a[1], value)
+                            self.lxml_element.set(a[1], unicode(value))
             except KeyError:
                 print "Connection " + self.reference.type.name + " does not support " + unicode(a[0]) + " attribute!"
                 continue
@@ -122,7 +122,7 @@ class Connector:
                     elif len(a) == 3 and not callable(a[2]):
                         value = a[2][self.reference.values[a[0]]]
 
-                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=a[1], value=value)
+                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=a[1], value=unicode(value))
             except KeyError:
                 print "Tagged value " + a[1] + " for " + (self.reference.values["name"] or self.reference.type.name) + " is not available or supported!"
                 continue
@@ -157,9 +157,9 @@ class Connector:
                         path_nodes = a[1].split('/')
                         for path_node in path_nodes:
                             if path_node[0] != '@':
-                                wrap_node = etree.SubElement(wrap_node, self.prefix + path_node)
+                                wrap_node = etree.SubElement(wrap_node, self.prefix + unicode(path_node))
                             else:
-                                wrap_node.set(path_node[1:], value)
+                                wrap_node.set(path_node[1:], unicode(value))
             except KeyError:
                 print "Connection " + self.reference.type.name + " does not support " + unicode(a[0]) + " attribute!"
                 continue

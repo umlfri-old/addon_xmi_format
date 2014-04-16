@@ -46,7 +46,7 @@ class Operation:
     )
 
     CHILDREN_NODES = (
-        ("stereotype", "ModelElement.stereotype/UML:Stereotype/@name"),
+        ("stereotype", "ModelElement.stereotype/Stereotype/@name"),
     )
 
     def __init__(self, parent_reference, lxml_element, position, prefix, exporter):
@@ -87,7 +87,7 @@ class Operation:
                     elif len(a) == 3 and not callable(a[2]):
                         value = a[2][self.values[a[0]]]
 
-                    self.lxml_element.set(a[1], value)
+                    self.lxml_element.set(a[1], unicode(value))
             except KeyError:
                 print "Attribute " + a[0] + " for " + (self.values["name"] or self.parent_reference.type.name) + " is not available or supported!"
                 continue
@@ -107,7 +107,7 @@ class Operation:
                     elif len(a) == 3 and not callable(a[2]):
                         value = a[2][self.values[a[0]]]
 
-                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=a[1], value=value)
+                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=a[1], value=unicode(value))
             except KeyError:
                 print "Tagged value " + a[0] + " for " + (self.values["name"] or self.parent_reference.type.name) + " is not available or supported!"
                 continue
@@ -127,9 +127,9 @@ class Operation:
                     path_nodes = a[1].split('/')
                     for path_node in path_nodes:
                         if path_node[0] != '@':
-                            wrap_node = etree.SubElement(wrap_node, self.prefix + path_node)
+                            wrap_node = etree.SubElement(wrap_node, self.prefix + unicode(path_node))
                         else:
-                            wrap_node.set(path_node[1:], value)
+                            wrap_node.set(path_node[1:], unicode(value))
             except KeyError:
                 print "Children node value " + a[0] + " for " + (self.values["name"] or self.parent_reference.type.name) + " is not available or supported!"
                 continue

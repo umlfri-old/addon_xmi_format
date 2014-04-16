@@ -8,7 +8,6 @@ from element import *
 from export_dialog import *
 from diagram import *
 
-
 class Exporter:
 
     def __init__(self, adapter, export_file):
@@ -66,8 +65,8 @@ class Exporter:
     def _write_data_types(self):
         for type_name in self.project_data_types:
             new_data_type = etree.SubElement(self.content_children, self.prefix + "DataType")
-            new_data_type.set("xmi.id", self.project_data_types[type_name])
-            new_data_type.set("name", type_name)
+            new_data_type.set("xmi.id", unicode(self.project_data_types[type_name]))
+            new_data_type.set("name", unicode(type_name))
 
     def _write_diagrams(self):
         for diagram in self.project_diagrams:

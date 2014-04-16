@@ -70,7 +70,7 @@ class Element:
             try:
                 if isinstance(Dictionary.ELEMENT_TYPE.get(child.type.name), tuple):
                     elm_type = Dictionary.ELEMENT_TYPE[child.type.name]
-                    new_node = etree.SubElement(self.children_wraper, self.prefix + elm_type[0], kind=elm_type[1])
+                    new_node = etree.SubElement(self.children_wraper, self.prefix + elm_type[0], kind=unicode(elm_type[1]))
                 else:
                     new_node = etree.SubElement(self.children_wraper, self.prefix + Dictionary.ELEMENT_TYPE[child.type.name])
 
@@ -95,7 +95,7 @@ class Element:
                     elif len(a) == 3 and not callable(a[2]):
                         value = a[2][self.reference.values[a[0]]]
 
-                    self.lxml_element.set(a[1], value)
+                    self.lxml_element.set(a[1], unicode(value))
             except KeyError:
                 print "Attribute " + a[1] + " for " + (self.reference.values["name"] or self.reference.type.name) + " is not available or supported!"
                 continue
@@ -115,7 +115,7 @@ class Element:
                     elif len(a) == 3 and not callable(a[2]):
                         value = a[2][self.reference.values[a[0]]]
 
-                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=a[1], value=value)
+                    etree.SubElement(wrap_node, self.prefix + "TaggedValue", tag=unicode(a[1]), value=unicode(value))
             except KeyError:
                 print "Tagged value " + a[1] + " for " + (self.reference.values["name"] or self.reference.type.name) + " is not available or supported!"
                 continue
@@ -137,7 +137,7 @@ class Element:
                         if path_node[0] != '@':
                             wrap_node = etree.SubElement(wrap_node, self.prefix + path_node)
                         else:
-                            wrap_node.set(path_node[1:], value)
+                            wrap_node.set(path_node[1:], unicode(value))
             except KeyError:
                 print "Children node value " + a[1] + " for " + (self.reference.values["name"] or self.reference.type.name) + " is not available or supported!"
                 continue
@@ -178,7 +178,7 @@ class Element:
                     elm_type = Dictionary.CONNECTION_TYPE[connector.type.name]
                     if isinstance(elm_type, tuple):
                         if elm_type[0] == "Association":
-                            new_node = etree.SubElement(wrapper, self.prefix + elm_type[0])
+                            new_node = etree.SubElement(wrapper, self.prefix + unicode(elm_type[0]))
                             kind = elm_type[1]
                         else:
                             if self.parent.connector_wraper is None:
@@ -188,7 +188,7 @@ class Element:
                                 for child_connector in self.parent.connectors:
                                     self.parent.children_wraper.remove(child_connector)
 
-                                tmp_wrapper0 = etree.SubElement(self.parent.children_wraper, self.prefix + elm_type[1])
+                                tmp_wrapper0 = etree.SubElement(self.parent.children_wraper, self.prefix + unicode(elm_type[1]))
                                 tmp_wrapper1 = etree.SubElement(tmp_wrapper0, self.prefix + "StateMachine.top")
                                 tmp_wrapper1 = etree.SubElement(tmp_wrapper1, self.prefix + "CompositeState")
                                 self.parent.children_wraper = etree.SubElement(tmp_wrapper1, self.prefix + "CompositeState.subvertex")
@@ -201,10 +201,10 @@ class Element:
                                 for child_connector in self.parent.connectors:
                                     self.parent.connector_wraper.append(child_connector)
 
-                            new_node = etree.SubElement(wrapper, self.prefix + elm_type[0])
+                            new_node = etree.SubElement(wrapper, self.prefix + unicode(elm_type[0]))
                             kind = None
                     else:
-                        new_node = etree.SubElement(wrapper, self.prefix + elm_type)
+                        new_node = etree.SubElement(wrapper, self.prefix + unicode(elm_type))
                         kind = None
 
                     new_connector = Connector(connector, new_node, kind, self.prefix, self.exporter)
